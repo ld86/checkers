@@ -16,15 +16,11 @@ include utils.asm
 start:
     push bp
     mov bp, sp
-    call c_graphics
 
-    call draw_field
-    call c_mouse
+    push 0
+    call start_game
+    add sp, 2
 
-    call events_dispatcher    
-
-    call d_mouse
-    call d_graphics
     pop bp
 	ret
 

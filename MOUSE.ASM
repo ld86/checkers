@@ -48,9 +48,7 @@ head_mouse_events dw 0
 tail_mouse_events dw 0
 
 proc mouse_handler
-    push bp
-    mov bp, sp
-
+    pusha
     mov bx, tail_mouse_events
     mov word ptr mouse_events_x[bx], cx
     mov word ptr mouse_events_y[bx], dx
@@ -61,7 +59,7 @@ proc mouse_handler
 
     mov tail_mouse_events, 0
 @@end:
-    pop bp
+    popa
     retf
 endp mouse_handler
 

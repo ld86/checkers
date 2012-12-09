@@ -1,4 +1,41 @@
 LOCALS @@
+; 50 50
+; 378 378
+
+cell_size dw 41
+cell_half_size dw 20
+chip_r dw 15
+xy_left dw 50
+xy_right dw 378
+
+table_colors    db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
+                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
+                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
+                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
+                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
+                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
+                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
+                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
+
+table_addr  dw 0
+
+white_table db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+            
+black_table db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
 
 ; X Y
 proc get_cell_centr
@@ -13,8 +50,8 @@ proc get_cell_centr
     call get_cell_left_top
     add sp, 4
 
-    add ax, 20
-    add bx, 20
+    add ax, cell_half_size
+    add bx, cell_half_size
 
     pop bp
     ret
@@ -24,22 +61,21 @@ endp get_cell_centr
 proc get_cell_left_top
     push bp
     mov bp, sp
-    sub sp, 6
-    mov word ptr [bp-6], 41
+    sub sp, 4
 
     mov ax, [bp+6]
-    imul word ptr [bp-6]
-    add ax, 50
+    imul cell_size
+    add ax, xy_left
     mov [bp-2],ax
 
     mov ax, [bp+4]
-    imul word ptr [bp-6]
-    add ax, 50
+    imul cell_size
+    add ax, xy_left
     mov [bp-4],ax
 
     mov ax, [bp-2]
     mov bx, [bp-4]
-    add sp, 6
+    add sp, 4
     pop bp
     ret
 endp get_cell_left_top
@@ -48,10 +84,14 @@ proc draw_border
     push bp
     mov bp, sp
     
-    push 45
-    push 45
-    push 383
-    push 383
+    mov ax, xy_left
+    sub ax, 5
+    push ax
+    push ax
+    mov ax, xy_right
+    add ax, 5
+    push ax
+    push ax
     push 1
     call draw_rectangle
     add sp, 10
@@ -66,7 +106,7 @@ proc draw_field
     sub sp, 6
     mov word ptr [bp-2], 0
     mov word ptr [bp-4], 0
-    mov word ptr [bp-6], 7
+    mov word ptr [bp-6], 0Fh
     
     call draw_border
 @@row:
@@ -80,8 +120,8 @@ proc draw_field
 
     push ax
     push bx
-    add ax, 40
-    add bx, 40
+    add ax, cell_size
+    add bx, cell_size
     push ax
     push bx
     mov ax, [bp-6]
@@ -94,7 +134,7 @@ proc draw_field
     je @@end_row
 
     inc word ptr [bp-2]
-    mov ax, 7
+    mov ax, 0Fh
     sub ax, [bp-6]
     mov [bp-6], ax
     
@@ -130,7 +170,7 @@ proc draw_chip
 
     push ax
     push bx
-    push 20
+    push chip_r
     mov ax, [bp+4]
     push ax
     call draw_circle
@@ -141,14 +181,96 @@ proc draw_chip
 endp draw_chip
 
 ; X Y
-proc handle_mouse_click
+proc get_cell_by_click
+    push bp
+    mov bp, sp
+    sub sp, 4
+    mov word ptr [bp-2], 0FFFFh
+    mov word ptr [bp-4], 0FFFFh
+
+    mov ax, [bp+6]
+    cmp ax, xy_left
+    jng @@end
+    cmp ax, xy_right
+    jg @@end
+
+    sub ax, xy_left
+    mov bx, cell_size
+    idiv bl
+    xor ah, ah
+    mov [bp-2], ax
+    
+    mov ax, [bp+4]
+    cmp ax, xy_left
+    jng @@end
+    cmp ax, xy_right
+    jg @@end
+    
+    sub ax, xy_left
+    mov bx, cell_size
+    idiv bl
+    xor ah, ah
+    mov [bp-4], ax   
+@@end:
+    mov ax, [bp-2]
+    mov bx, [bp-4]
+
+    add sp, 4
+    pop bp
+    ret
+endp get_cell_by_click
+
+proc highlight_cell
     push bp
     mov bp, sp
     
     mov ax, [bp+6]
     mov bx, [bp+4]
+    push ax
+    push bx
+    call get_cell_left_top
+    add sp,4
 
+    push ax
+    push bx
+    add ax, cell_size
+    add bx, cell_size
+    push ax
+    push bx
+    push 3
+    call draw_rectangle
+    add sp, 10
 
+    pop bp
+    ret
+endp highlight_cell
+
+; X Y
+proc handle_mouse_click
+    push bp
+    mov bp, sp
+    call hide_cursor
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    push ax
+    push bx
+    call get_cell_by_click
+    add sp, 4
+
+    cmp ax, 0FFFFh
+    je @@end
+    cmp bx, 0FFFFh
+    je @@end
+
+    push ax
+    push bx
+    call highlight_cell
+    add sp, 4
+
+@@end:
+    call show_cursor
     pop bp
     ret
 endp handle_mouse_click
@@ -167,7 +289,7 @@ proc events_dispatcher
     
     cmp ax, bx
     je @@dispatch
-
+    
     mov bx, head_mouse_events
     mov cx, word ptr mouse_events_x[bx]
     mov dx, word ptr mouse_events_y[bx]
@@ -188,3 +310,87 @@ proc events_dispatcher
     pop bp
     ret
 endp events_dispatcher
+
+; Table
+proc redraw_chips
+    push bp
+    mov bp, sp
+    sub sp, 4
+
+    mov word ptr [bp-2], 0
+    mov word ptr [bp-4], 0
+
+@@row:
+    mov ax, [bp-4]
+    mov bx, 8
+    imul bl
+    add ax, [bp-2]
+    
+    mov bx, [bp+4]
+    add bx, ax
+    mov cl, byte ptr [bx] 
+    xor ch, ch
+    cmp cl, 0FFh
+    je @@next_in_row
+
+
+    mov ax, [bp-2]
+    mov bx, [bp-4]
+
+    push ax
+    push bx
+    push cx
+    call draw_chip
+    add sp, 6
+
+@@next_in_row:
+    mov ax, [bp-2]
+    cmp ax, 7
+    je @@end_row
+    inc word ptr [bp-2]
+    jmp @@row
+
+@@end_row:
+    mov word ptr [bp-2],0
+    inc word ptr [bp-4]
+
+    mov ax, [bp-4]
+    cmp ax, 8
+    je @@end
+
+    jmp @@row   
+
+@@end:
+    add sp, 4
+    pop bp
+    ret
+endp redraw_chips
+
+; 0 - White, 1 - Black
+proc start_game
+    push bp
+    mov bp, sp
+    
+    mov table_addr, offset white_table
+    mov ax, [bp+4]
+    test ax, ax
+    je @@next
+    mov table_addr, offset black_table
+
+@@next:
+    call c_graphics
+    call draw_field
+    
+    push table_addr
+    call redraw_chips
+    add sp, 2
+
+    call c_mouse
+    call events_dispatcher
+
+    call d_mouse
+    call d_graphics
+    
+    pop bp
+    ret
+endp start_game
