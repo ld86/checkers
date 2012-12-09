@@ -128,7 +128,6 @@ proc draw_rectangle
 
     mov ax, [bp-4]
     mov bx, [bp+6]
-    inc bx
     cmp ax, bx
     je @@end_rectangle
 

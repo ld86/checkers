@@ -8,6 +8,8 @@ _1:
     jmp start
 
 include com.asm
+include game_l~1.asm
+include handlers.asm
 include graphics.asm
 include game.asm
 include mouse.asm

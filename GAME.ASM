@@ -8,14 +8,19 @@ chip_r dw 15
 xy_left dw 50
 xy_right dw 378
 
-table_colors    db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
-                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
-                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
-                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
-                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
-                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
-                db 0FFh,0,0FFh,0,0FFh,0,0FFh,0
-                db 0,0FFh,0,0FFh,0,0FFh,0,0FFh
+game_color dw 0Fh
+game_state dw 0
+choosen_x dw 0
+choosen_y dw 0
+
+table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
+                db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
+                db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
+                db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
+                db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
+                db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
+                db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
+                db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
 
 table_addr  dw 0
 
@@ -67,7 +72,7 @@ proc get_cell_left_top
     imul cell_size
     add ax, xy_left
     mov [bp-2],ax
-
+    
     mov ax, [bp+4]
     imul cell_size
     add ax, xy_left
@@ -122,6 +127,8 @@ proc draw_field
     push bx
     add ax, cell_size
     add bx, cell_size
+    dec ax
+    dec bx
     push ax
     push bx
     mov ax, [bp-6]
@@ -235,6 +242,8 @@ proc highlight_cell
     push bx
     add ax, cell_size
     add bx, cell_size
+    dec ax
+    dec bx
     push ax
     push bx
     push 3
@@ -264,10 +273,27 @@ proc handle_mouse_click
     cmp bx, 0FFFFh
     je @@end
 
+    cmp game_state, 0
+    je @@highlight_and_check
+    cmp game_state, 1
+    je @@highlight_or_make
+    jmp @@end
+
+@@highlight_and_check:
     push ax
     push bx
-    call highlight_cell
+    call check_and_highlight
     add sp, 4
+    jmp @@end
+
+
+@@highlight_or_make:
+    push ax
+    push bx
+    call highlight_or_make
+    add sp, 4
+    jmp @@end
+
 
 @@end:
     call show_cursor
@@ -310,6 +336,74 @@ proc events_dispatcher
     pop bp
     ret
 endp events_dispatcher
+
+; X Y
+proc redraw_cell
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    push ax
+    push bx
+    call get_cell_left_top
+    add sp, 4
+
+    push ax
+    push bx
+    add ax, cell_size
+    add bx, cell_size
+    dec ax
+    dec bx
+    push ax
+    push bx
+
+    mov ax, [bp+4]
+    mov bx, 8
+    imul bl
+    add ax, [bp+6]
+    mov bx, ax
+    add bx, offset table_colors
+    mov cl, byte ptr [bx]
+    xor ch, ch
+
+    push cx
+    call draw_rectangle
+    add sp, 10 
+    pop bp
+    ret
+endp redraw_cell
+
+; X Y
+proc redraw_chip
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+4]
+    mov bx, 8
+    imul bx
+    add ax, [bp+6]
+    mov bx, ax
+    add bx, table_addr
+    mov cl, byte ptr [bx]
+    xor ch, ch
+    cmp cl, 0FFh
+    je @@end
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    push ax
+    push bx
+    push cx
+    call draw_chip
+    add sp, 6
+
+@@end:
+    pop bp
+    ret
+endp redraw_chip
 
 ; Table
 proc redraw_chips
@@ -376,11 +470,16 @@ proc start_game
     test ax, ax
     je @@next
     mov table_addr, offset black_table
-
+    mov game_color, 7h
 @@next:
     call c_graphics
     call draw_field
     
+    push 3
+    push 4
+    call redraw_cell
+    add sp, 4
+
     push table_addr
     call redraw_chips
     add sp, 2
