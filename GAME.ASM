@@ -140,6 +140,19 @@ proc draw_chip
     ret
 endp draw_chip
 
+; X Y
+proc handle_mouse_click
+    push bp
+    mov bp, sp
+    
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+
+    pop bp
+    ret
+endp handle_mouse_click
+
 proc events_dispatcher
     push bp
     mov bp, sp
@@ -161,10 +174,8 @@ proc events_dispatcher
 
     push cx
     push dx
-    push 20
-    push 1
-    call draw_circle
-    add sp, 8
+    call handle_mouse_click
+    add sp, 4
 
     inc head_mouse_events
     cmp head_mouse_events, 10
