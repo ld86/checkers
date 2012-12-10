@@ -19,7 +19,7 @@ start:
     push bp
     mov bp, sp
 
-    push 0
+    push 1
     call start_game
     add sp, 2
 

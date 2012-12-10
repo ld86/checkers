@@ -88,7 +88,7 @@ proc highlight_or_make
     call make
     add sp, 8
 
-    mov game_state, 0
+    mov game_state, 3
 @@end:
     pop bp
     ret

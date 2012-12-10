@@ -311,6 +311,9 @@ proc events_dispatcher
     int 16h
     jnz @@end
 
+    cmp game_state, 3
+    je @@evil_turn
+
     mov ax, head_mouse_events
     mov bx, tail_mouse_events
     
@@ -331,6 +334,10 @@ proc events_dispatcher
     jne @@dispatch
 
     mov head_mouse_events, 0
+    jmp @@dispatch
+
+@@evil_turn:
+    call evil_turn
     jmp @@dispatch
 
 @@end:
@@ -473,6 +480,7 @@ proc start_game
     mov table_addr, offset black_table
     mov main_game_color, 7h
     mov king_game_color, 6
+    mov game_state, 3
 @@next:
     call c_graphics
     call draw_field
@@ -487,8 +495,10 @@ proc start_game
     add sp, 2
 
     call c_mouse
+    call Ser_Ini
     call events_dispatcher
 
+    call Ser_Rst
     call d_mouse
     call d_graphics
     
