@@ -8,7 +8,8 @@ chip_r dw 15
 xy_left dw 50
 xy_right dw 378
 
-game_color dw 0Fh
+main_game_color dw 0Fh
+king_game_color dw 0Eh
 game_state dw 0
 choosen_x dw 0
 choosen_y dw 0
@@ -470,7 +471,8 @@ proc start_game
     test ax, ax
     je @@next
     mov table_addr, offset black_table
-    mov game_color, 7h
+    mov main_game_color, 7h
+    mov king_game_color, 6
 @@next:
     call c_graphics
     call draw_field

@@ -12,7 +12,7 @@ proc check_and_highlight
     call get_color
     add sp, 4
 
-    cmp ax, game_color
+    cmp ax, main_game_color
     jne @@end
 
     mov ax, [bp+6]
@@ -45,7 +45,7 @@ proc highlight_or_make
     call get_color
     add sp, 4
 
-    cmp ax, game_color
+    cmp ax, main_game_color
     jne @@try_make
 
     mov ax, choosen_x
