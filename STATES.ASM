@@ -41,10 +41,17 @@ proc waiting_for_player
     
     call Get_Chr
     jc @@make_choose_next
- 
+
     sub al, '0'
     mov evil_ssp, al
 
+    cmp my_ssp, al
+    jne @@ok
+    
+    mov my_ssp, 3
+    jmp @@end
+
+@@ok:
     mov ah, 02h
     xor bh, bh
     mov dh, 0
@@ -67,7 +74,38 @@ proc waiting_for_player
     add dl, '0'
     int 21h
 
+    cmp my_ssp, 0
+    je @@stone
+    cmp my_ssp, 1
+    je @@scissors
+    cmp my_ssp, 2
+    je @@paper
+
+@@stone:
+    cmp evil_ssp, 1
+    je @@white
+    jmp @@black
+    
+@@scissors:
+    cmp evil_ssp, 2
+    je @@white
+    jmp @@black
+
+@@paper:
+    cmp evil_ssp, 0
+    je @@white
+    jmp @@black
+
+@@white:
+    mov white_or_black, 0
+    mov game_state, 101
     jmp @@end
+
+@@black:
+    mov white_or_black, 1
+    mov game_state, 101
+    jmp @@end
+
 @@end:
     ret
 endp waiting_for_player

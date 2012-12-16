@@ -8,10 +8,12 @@ chip_r dw 15
 xy_left dw 50
 xy_right dw 378
 
+white_or_black db 0
 main_game_color dw 0Fh
 king_game_color dw 0Eh
 game_state dw 100
 ; 100 - waiting for players
+; 101 - game
 choosen_x dw 0
 choosen_y dw 0
 
@@ -315,7 +317,13 @@ proc events_dispatcher
     cmp game_state, 100
     je @@waiting_for_player 
 
-    cmp game_state, 3
+    cmp game_state, 101
+    je @@start_game
+
+    cmp game_state, 102
+    je @@my_turn
+
+    cmp game_state, 103
     je @@evil_turn
 
     mov ax, head_mouse_events
@@ -342,6 +350,17 @@ proc events_dispatcher
 
 @@waiting_for_player:
     call waiting_for_player
+    jmp @@dispatch
+
+@@start_game:
+    xor ax, ax
+    mov al, white_or_black
+    push ax
+    call start_game
+    add sp, 2
+    jmp @@dispatch
+
+@@my_turn:
     jmp @@dispatch
 
 @@evil_turn:
@@ -482,13 +501,14 @@ proc start_game
     mov bp, sp
     
     mov table_addr, offset white_table
+    mov game_state, 102
     mov ax, [bp+4]
     test ax, ax
     je @@next
     mov table_addr, offset black_table
     mov main_game_color, 7h
     mov king_game_color, 6
-    mov game_state, 3
+    mov game_state, 103
 @@next:
     call draw_field
     

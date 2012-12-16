@@ -22,7 +22,7 @@ proc timer_handler
     pop ds
     inc ant_syn_counter
     inc my_syn_counter
-    cmp my_syn_counter, 18
+    cmp my_syn_counter, 9
     jl @@go
     mov my_syn_counter, 0
     mov al, 'A'

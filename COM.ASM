@@ -165,7 +165,28 @@ or   al,al     ; если пpинят нуль,
      iret
      Ser_Int   endp
 
+get_position db 0
+out_position db 0
      Out_Chr   proc near
+     pusha
+     push ax
+     mov ah, 02h
+     xor bh, bh
+     mov dh, 28
+     mov dl, out_position
+     int 10h
+     pop ax
+     mov ah, 2
+     mov dl, al
+     int 21h
+
+     inc out_position
+     cmp out_position, 40
+     jne Out_Chr_Next
+     mov out_position, 0
+Out_Chr_Next:
+
+     popa
      push ax
      push cx
      push dx
@@ -214,6 +235,26 @@ or   al,al     ; если пpинят нуль,
      dec  Count     ; и уменьшим счетчик
      sti            ; pазpешение пpеpываний
      pop  si
+     pusha
+     push ax
+     mov ah, 02h
+     xor bh, bh
+     mov dh, 29
+     mov dl, get_position
+     int 10h
+     pop ax
+     mov ah, 2
+     mov dl, al
+     int 21h
+
+     inc get_position
+     cmp get_position, 40
+     jne Get_Chr_Next
+     mov get_position, 0
+
+     Get_Chr_Next:
+
+     popa
      clc            ; и ноpмальный возвpат
      ret
      endp
