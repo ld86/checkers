@@ -275,6 +275,29 @@ proc convert_coords
     ret
 endp convert_coords
 
+; A [bp+6]
+; 1 [bp+4]
+proc back_convert_coords
+    push bp
+    mov bp, sp
+
+    cmp white_or_black,0
+    je @@white
+    jmp @@black
+
+@@white:
+    
+    jmp @@end
+
+@@black:
+    jmp @@end
+
+
+@@end:
+    pop bp
+    ret
+endp back_convert_coords
+
 proc evil_turn
     push bp
     mov bp, sp
