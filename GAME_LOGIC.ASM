@@ -70,6 +70,39 @@ proc make
 
     mov al, 'C'
     call Out_Chr
+    mov al, '0'
+    call Out_Chr
+    mov al, '4'
+    call Out_Chr
+
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+    push ax
+    push bx
+    call convert_coords
+    add sp, 4
+
+    push ax
+    mov al, ah
+    call Out_Chr
+
+    pop ax
+    call Out_Chr
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call convert_coords
+    add sp, 4
+
+    push ax
+    mov al, ah
+    call Out_Chr
+
+    pop ax
+    call Out_Chr
+
 
     pop bp
     ret
@@ -224,7 +257,16 @@ proc convert_coords
     jmp @@end
 
 @@black:
+    mov ax, [bp+6]
+    mov bl, 'H'
+    sub bl, al
+    mov al, bl
+
+    mov bx, [bp+4]
+    add bl, '1'
     
+    mov ah, al
+    mov al, bl
     jmp @@end
 
 
