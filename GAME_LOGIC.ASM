@@ -197,32 +197,3 @@ proc try_near
     ret
 endp try_near
 
-proc evil_turn
-    push bp
-    mov bp, sp
-
-    call Get_Chr
-    jc @@end
-    
-    push ax
-    mov dl, al
-    mov ah, 2
-    int 21h
-    pop ax
-
-    cmp al, 'A'
-    je @@evil_beat
-    cmp al, 'C'
-    je @@evil_turn
-    jmp @@end
-
-@@evil_beat:
-    jmp @@end
-
-@@evil_turn:
-    jmp @@end
-
-@@end:
-    pop bp
-    ret
-endp evil_turn

@@ -53,3 +53,13 @@ proc get_ssp
     ret
 endp get_ssp
 
+proc clear_screen
+    mov ah, 06
+    mov bh, 0
+    xor al, al
+    xor cx, cx
+    mov dh, 52
+    mov dl, 79
+    int 10h
+    ret
+endp

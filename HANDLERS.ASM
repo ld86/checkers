@@ -27,7 +27,7 @@ proc check_and_highlight
     call redraw_chip
     add sp, 4
 
-    mov game_state, 1
+    mov game_state, 103
 
 @@end:
     pop bp
@@ -88,7 +88,7 @@ proc highlight_or_make
     call make
     add sp, 8
 
-    mov game_state, 3
+    mov game_state, 104
 @@end:
     pop bp
     ret
