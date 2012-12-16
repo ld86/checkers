@@ -318,6 +318,7 @@ proc events_dispatcher
     int 16h
     jnz @@end
 
+
     cmp game_state, 100
     je @@waiting_for_player 
 
@@ -327,6 +328,10 @@ proc events_dispatcher
     cmp game_state, 104
     je @@evil_turn
 
+    call Get_Chr
+    jc @@empty_com
+    
+@@empty_com:
     mov ax, head_mouse_events
     mov bx, tail_mouse_events
     
@@ -362,6 +367,7 @@ proc events_dispatcher
     jmp @@dispatch
 
 @@evil_turn:
+    call evil_turn
     jmp @@dispatch
 
 @@end:

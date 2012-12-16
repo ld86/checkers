@@ -22,6 +22,7 @@ proc waiting_for_player
     push ax
     call bad_protocol
     add sp, 2
+    jmp @@end
 
 @@send_ssp:
     cmp my_ssp, 3
@@ -52,28 +53,6 @@ proc waiting_for_player
     jmp @@end
 
 @@ok:
-    mov ah, 02h
-    xor bh, bh
-    mov dh, 0
-    mov dl, 0
-    int 10h
-
-    mov ah, 2
-    mov dl, my_ssp
-    add dl, '0'
-    int 21h
-
-    mov ah, 02h
-    xor bh, bh
-    mov dh, 1
-    mov dl, 0
-    int 10h
-
-    mov ah, 2
-    mov dl, evil_ssp
-    add dl, '0'
-    int 21h
-
     cmp my_ssp, 0
     je @@stone
     cmp my_ssp, 1

@@ -68,6 +68,9 @@ proc make
     call redraw_cell
     add sp, 4
 
+    mov al, 'C'
+    call Out_Chr
+
     pop bp
     ret
 endp make
@@ -197,3 +200,63 @@ proc try_near
     ret
 endp try_near
 
+; Column [bp+6]
+; Row [bp+4]
+proc convert_coords
+    push bp
+    mov bp, sp
+
+    cmp white_or_black, 0
+    je @@white
+    jmp @@black 
+
+@@white:
+    mov ax, [bp+6]
+    add al, 'A'
+    
+    mov bx, [bp+4]
+    mov cl, '8'
+    sub cl, bl
+    mov bl, cl
+    
+    mov ah, al
+    mov al, bl
+    jmp @@end
+
+@@black:
+    
+    jmp @@end
+
+
+@@end:
+    pop bp
+    ret
+endp convert_coords
+
+proc evil_turn
+    push bp
+    mov bp, sp
+    
+    call Get_Chr    
+    jc @@end
+
+    cmp al, 'A'
+    je @@end
+
+    cmp al, 'C'
+    je @@change_turn
+
+    push ax
+    call bad_protocol
+    add sp, 2
+
+    jmp @@end
+
+@@change_turn:
+    mov game_state, 102
+    jmp @@end
+
+@@end:
+    pop bp
+    ret
+endp evil_turn
