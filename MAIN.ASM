@@ -14,14 +14,25 @@ include graphics.asm
 include game.asm
 include mouse.asm
 include utils.asm
+include timer.asm
+include ssp.asm
+include states.asm
 
 start:
     push bp
     mov bp, sp
 
-    push 1
-    call start_game
-    add sp, 2
+    call c_graphics
+    call c_mouse
+    call Ser_Ini
+    call set_timer
+
+    call events_dispatcher
+
+    call unset_timer
+    call Ser_Rst
+    call d_mouse
+    call d_graphics
 
     pop bp
 	ret
