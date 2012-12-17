@@ -18,6 +18,10 @@ proc check_and_highlight
     mov ax, [bp+6]
     mov bx, [bp+4]    
 
+    mov moves_pointer, 1
+    mov moves_x[0], ax
+    mov moves_y[0], bx
+
     mov choosen_x, ax
     mov choosen_y, bx
 
@@ -62,6 +66,10 @@ proc highlight_or_make
     mov choosen_x, ax
     mov choosen_y, bx
 
+    mov moves_pointer, 1
+    mov moves_x[0], ax
+    mov moves_y[0], bx
+
     push ax
     push bx
     call highlight_cell
@@ -85,6 +93,7 @@ proc highlight_or_make
     jne @@end
 
     sub sp, 8
+    call add_move
     call make
     add sp, 8
 
@@ -98,11 +107,86 @@ proc highlight_or_make
     cmp ax, 1
     jne @@end    
 
-    mov al, 'C'
-    call Out_Chr
-
+    call flush
     mov game_state, 104
 @@end:
     pop bp
     ret
 endp highlight_or_make
+
+choosen_x dw 0
+choosen_y dw 0  
+
+moves_x dw 81 dup(0)
+moves_y dw 81 dup(0)
+
+moves_pointer dw 0
+
+; X [bp+6]
+; Y [bp+4]
+proc add_move
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov cx, [bp+4]
+
+    mov bx, moves_pointer
+
+    mov moves_x[bx], ax
+    mov moves_y[bx], cx
+
+    inc moves_pointer
+
+    pop bp
+    ret
+endp add_move
+
+proc flush
+    push bp
+    mov bp, sp
+    sub sp, 2
+
+    mov al, 'C'
+    call Out_Chr
+
+    mov al, '0'
+    call Out_Chr
+
+    mov ax, moves_pointer
+    shl ax, 1
+    add al, '0'
+    call Out_Chr
+
+    mov word ptr [bp-2], 0
+
+@@loop:
+    mov bx, [bp-2]
+    cmp bx, moves_pointer
+    je @@end
+
+    mov ax, moves_x[bx]
+    mov dx, moves_y[bx]
+
+    push ax
+    push dx
+    call convert_coords
+    add sp, 4
+
+    push ax
+    mov al, ah
+    call Out_Chr
+
+    pop ax
+    call Out_Chr
+
+    inc word ptr [bp-2]
+    jmp @@loop
+
+@@end:
+    mov moves_pointer, 0
+
+    add sp, 2
+    pop bp
+    ret
+endp flush

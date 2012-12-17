@@ -22,9 +22,6 @@ game_state dw 100
 ; 103 - move chip
 ; 104 - evil turn
 
-choosen_x dw 0
-choosen_y dw 0
-
 table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
                 db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
                 db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
