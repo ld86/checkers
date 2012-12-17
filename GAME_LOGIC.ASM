@@ -4,7 +4,7 @@ LOCALS @@
 proc get_color
     push bp
     mov bp, sp
-
+   
     mov ax, [bp+4]
     mov bx, 8
     imul bl
@@ -43,7 +43,30 @@ proc is_final_position
     push bp
     mov bp, sp    
 
-    ;jmp @@false
+    cmp last_check_type, 0
+    je @@true    
+
+@@left_top:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@left_top_end:
+
+@@right_top:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@right_top_end:
+    
+@@left_bottom:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@left_bottom_end:
+
+@@right_bottom:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@right_bottom_end:
+
+    jmp @@true
 
 @@true:
     mov ax, 1
@@ -58,6 +81,7 @@ proc is_final_position
     ret
 endp is_final_position
 
+last_check_type db 0
 ; X From    [bp+10]
 ; Y From    [bp+8]
 ; X To      [bp+6]
@@ -89,6 +113,26 @@ proc make
     call redraw_cell
     add sp, 4
 
+    cmp last_check_type, 0
+    je @@end
+
+    mov ax, [bp+10]
+    add ax, [bp+6]
+    shr ax, 1
+
+    mov bx, [bp+8]
+    add bx, [bp+4]
+    shr bx, 1
+
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    add sp, 4
+
+@@end:
     pop bp
     ret
 endp make
@@ -129,6 +173,8 @@ proc is_allow_make
     jmp @@cut
 
 @@move:
+    mov last_check_type, 0
+
     mov ax, [bp+8]
     sub ax, [bp+4]
     cmp ax, 1
@@ -144,6 +190,8 @@ proc is_allow_make
     jmp @@true
 
 @@cut:
+    mov last_check_type, 1
+
     mov ax, [bp+10]
     add ax, [bp+6]
     shr ax, 1
@@ -158,19 +206,9 @@ proc is_allow_make
     add sp, 4
 
     cmp ax, evil_main_game_color
-    je @@cut_action
+    je @@true
     cmp ax, evil_king_game_color
     jne @@false
-
-@@cut_action:
-    sub sp, 4
-    push 0FFh
-    call set_color
-    add sp, 2
-
-    call redraw_cell
-    add sp, 4
-
     jmp @@true
 
 @@true:

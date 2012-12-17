@@ -20,7 +20,8 @@ game_state dw 100
 ; 101 - start game
 ; 102 - choose chip
 ; 103 - move chip
-; 104 - evil turn
+; 104 - continue move
+; 105 - evil turn
 
 table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
                 db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
@@ -286,6 +287,8 @@ proc handle_mouse_click
     je @@highlight_and_check
     cmp game_state, 103
     je @@highlight_or_make
+    cmp game_state, 104
+    je @@only_make
     jmp @@end
 
 @@highlight_and_check:
@@ -303,6 +306,12 @@ proc handle_mouse_click
     add sp, 4
     jmp @@end
 
+@@only_make:
+    push ax
+    push bx
+    call only_make
+    add sp, 4
+    jmp @@end
 
 @@end:
     call show_cursor
@@ -326,7 +335,7 @@ proc events_dispatcher
     cmp game_state, 101
     je @@start_game
 
-    cmp game_state, 104
+    cmp game_state, 105
     je @@evil_turn
 
     call Get_Chr
@@ -515,7 +524,7 @@ proc start_game
     mov king_game_color, 6
     mov evil_main_game_color, 0Fh
     mov evil_king_game_color, 0Eh
-    mov game_state, 104
+    mov game_state, 105
 @@next:
     call draw_field
     

@@ -105,14 +105,27 @@ proc highlight_or_make
     add sp, 4
 
     cmp ax, 1
-    jne @@end    
+    jne @@continue_move
 
     call flush
+    mov game_state, 105
+    jmp @@end
+
+@@continue_move:
     mov game_state, 104
+
 @@end:
     pop bp
     ret
 endp highlight_or_make
+
+proc only_make
+    push bp
+    mov bp, sp
+
+    pop bp
+    ret
+endp only_make
 
 choosen_x dw 0
 choosen_y dw 0  
@@ -144,7 +157,7 @@ endp add_move
 
 proc flush
     push bp
-    mov bp, sp
+    mov bp, sp    
     sub sp, 2
 
     mov al, 'C'
@@ -186,7 +199,7 @@ proc flush
 @@end:
     mov moves_pointer, 0
 
-    add sp, 2
+    add sp, 2    
     pop bp
     ret
 endp flush
