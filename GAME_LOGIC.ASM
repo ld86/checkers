@@ -352,10 +352,12 @@ proc evil_turn
     mov word ptr [bp-6], 0
 @@check_loop:
     mov bx, [bp-6]    
+    add bx, 2
     cmp bl, receive_turns_size
     je @@check_end
 
     
+    mov bx, [bp-6]
     mov ah, receive_turns[bx]
     mov al, receive_turns[bx+1]    
 
@@ -369,12 +371,7 @@ proc evil_turn
     xor bh,bh
     push ax
     push bx 
-    push 0FFh   
-    call set_color
-    add sp, 2
-    call redraw_cell
-    add sp, 4
-
+   
     mov bx, [bp-6]
     mov ah, receive_turns[bx+2]
     mov al, receive_turns[bx+3]    
@@ -389,14 +386,27 @@ proc evil_turn
     xor bh, bh
     push ax
     push bx
-    push evil_main_game_color 
-    call set_color
-    add sp, 2
-    call redraw_chip
-    add sp, 4
+    call is_evil_available
+    add sp, 8
 
-    add word ptr [bp-6], 4
+    cmp ax, 1
+    jne @@bad_move
+
+    sub sp, 8
+    call evil_make
+    add sp, 8
+
+@@check_loop_end:
+
+    add word ptr [bp-6], 2
     jmp @@check_loop
+
+@@bad_move:
+    mov al, 'D'
+    call Out_Chr
+    mov al, '1'
+    call Out_Chr
+    jmp @@end
 
 @@check_end:
     jmp @@change_turn
@@ -413,3 +423,130 @@ endp evil_turn
 
 receive_turns_size db 0
 receive_turns db 81 dup(0)
+
+; X From    [bp+10]
+; Y From    [bp+8]
+; X To      [bp+6]
+; Y To      [bp+4]
+proc evil_make
+    push bp
+    mov bp, sp    
+    
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    mov ax, evil_main_game_color
+    push ax
+    call set_color
+    add sp, 2
+    
+    call redraw_chip
+    add sp, 4
+    
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+
+    call redraw_cell
+    add sp, 4
+
+    pop bp
+    ret
+endp evil_make
+
+; X From    [bp+10]
+; Y From    [bp+8]
+; X To      [bp+6]
+; Y To      [bp+4]
+proc is_evil_available
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+    cmp al, 0FFh
+    jne @@false
+
+    mov ax, [bp+10]
+    mov bx, [bp+6]
+    sub ax, bx
+    cmp ax, -2
+    je @@stub
+    cmp ax, 2
+    jne @@move
+@@stub:
+    mov ax, [bp+8]
+    mov bx, [bp+4]
+    sub ax, bx
+    cmp ax, -2
+    je @@cut
+    cmp ax, 2
+    jne @@move
+    jmp @@cut
+
+@@move:
+    mov ax, [bp+4]
+    sub ax, [bp+8]
+    cmp ax, 1
+    jne @@false
+
+    mov ax, [bp+10]
+    sub ax, [bp+6]
+    cmp ax, 1
+    je @@true
+    cmp ax, -1
+    jne @@false
+
+    jmp @@true
+
+@@cut:
+    mov ax, [bp+10]
+    add ax, [bp+6]
+    shr ax, 1
+
+    mov bx, [bp+8]
+    add bx, [bp+4]
+    shr bx, 1
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, main_game_color
+    je @@cut_action
+    cmp ax, king_game_color
+    jne @@false
+
+@@cut_action:
+    sub sp, 4
+    push 0FFh
+    call set_color
+    add sp, 2
+
+    call redraw_cell
+    add sp, 4
+
+    jmp @@true
+
+@@true:
+    mov ax, 1
+    jmp @@end
+
+@@false:
+    xor ax, ax
+    jmp @@end
+
+@@end:     
+    pop bp
+    ret
+endp is_evil_available
