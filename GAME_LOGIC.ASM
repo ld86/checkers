@@ -43,6 +43,8 @@ proc is_final_position
     push bp
     mov bp, sp    
 
+    ;jmp @@false
+
 @@true:
     mov ax, 1
     jmp @@end
@@ -100,29 +102,76 @@ proc is_allow_make
     push bp
     mov bp, sp
 
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+    cmp al, 0FFh
+    jne @@false
+
     mov ax, [bp+10]
     mov bx, [bp+6]
     sub ax, bx
     cmp ax, -2
-    je @@cut
+    je @@stub
     cmp ax, 2
-    je @@cut
+    jne @@move
+@@stub:
     mov ax, [bp+8]
     mov bx, [bp+4]
-    sib ax, bx
+    sub ax, bx
     cmp ax, -2
     je @@cut
     cmp ax, 2
-    je @@cut
+    jne @@move
+    jmp @@cut
 
 @@move:
-    
-    jmp @@end
+    mov ax, [bp+8]
+    sub ax, [bp+4]
+    cmp ax, 1
+    jne @@false
+
+    mov ax, [bp+10]
+    sub ax, [bp+6]
+    cmp ax, 1
+    je @@true
+    cmp ax, -1
+    jne @@false
+
+    jmp @@true
 
 @@cut:
-    
-    
-    jmp @@end
+    mov ax, [bp+10]
+    add ax, [bp+6]
+    shr ax, 1
+
+    mov bx, [bp+8]
+    add bx, [bp+4]
+    shr bx, 1
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@cut_action
+    cmp ax, evil_king_game_color
+    jne @@false
+
+@@cut_action:
+    sub sp, 4
+    push 0FFh
+    call set_color
+    add sp, 2
+
+    call redraw_cell
+    add sp, 4
+
+    jmp @@true
 
 @@true:
     mov ax, 1

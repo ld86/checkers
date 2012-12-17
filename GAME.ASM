@@ -11,6 +11,10 @@ xy_right dw 378
 white_or_black db 0
 main_game_color dw 0Fh
 king_game_color dw 0Eh
+
+evil_main_game_color dw 7h
+evil_king_game_color dw 6
+
 game_state dw 100
 ; 100 - waiting for players
 ; 101 - start game
@@ -512,6 +516,8 @@ proc start_game
     mov table_addr, offset black_table
     mov main_game_color, 7h
     mov king_game_color, 6
+    mov evil_main_game_color, 0Fh
+    mov evil_king_game_color, 0Eh
     mov game_state, 104
 @@next:
     call draw_field
