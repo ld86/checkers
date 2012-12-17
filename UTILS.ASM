@@ -13,7 +13,7 @@ proc bad_protocol
     
     mov ah, 02h
     xor bh, bh
-    mov dh, 20
+    mov dh, 0
     mov dl, next_position
     int 10h
         

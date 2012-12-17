@@ -228,8 +228,7 @@ proc convert_coords
     ret
 endp convert_coords
 
-; A [bp+6]
-; 1 [bp+4]
+; A1    [bp+4]
 proc back_convert_coords
     push bp
     mov bp, sp
@@ -239,10 +238,19 @@ proc back_convert_coords
     jmp @@black
 
 @@white:
-    
+    mov ax, [bp+4]
+    sub ah, 'A'
+    mov bl, '8'
+    sub bl, al
+    mov al, bl
     jmp @@end
 
 @@black:
+    mov ax, [bp+4]
+    mov bl, 'H'
+    sub bl, ah
+    mov ah, bl 
+    sub al, '1'
     jmp @@end
 
 
@@ -254,7 +262,8 @@ endp back_convert_coords
 proc evil_turn
     push bp
     mov bp, sp
-    
+    sub sp, 6
+
     call Get_Chr    
     jc @@end
 
@@ -262,19 +271,145 @@ proc evil_turn
     je @@end
 
     cmp al, 'C'
-    je @@change_turn
+    je @@continue
+
+    push ax
+    call bad_protocol
+    add sp, 2
+    jmp @@end
+
+
+@@continue:
+    mov word ptr [bp-2], 0
+
+@@loop:
+    cmp word ptr [bp-2], 0
+    je @@first_digit
+    cmp word ptr [bp-2], 1
+    je @@second_digit
+    cmp word ptr [bp-2], 2
+    je @@message
+    cmp word ptr [bp-2], 3
+    je @@check_and_move
+    jmp @@end
+
+@@first_digit:
+    call Get_Chr    
+    jc @@first_digit    
+
+    mov ah, al
+    mov word ptr [bp-4], ax
+    mov word ptr [bp-2], 1
+    jmp @@loop
+
+@@second_digit:
+    call Get_Chr    
+    jc @@second_digit    
+
+    mov bx, [bp-4]
+    mov ah, bh
+    mov [bp-4], ax
+    mov word ptr [bp-2], 2   
+
+    mov ax, [bp-4]
+    xor ah, ah
+    sub al, '0'
+    mov [bp-4], ax
+
+    jmp @@loop
+
+@@message:
+    mov word ptr [bp-6], 0
+    mov ax, [bp-4]
+    mov receive_turns_size, al   
+
+@@message_loop:
+    mov bx, [bp-6]
+    cmp bx, [bp-4]
+    je @@message_end
+
+    call Get_Chr    
+    jc @@message_loop  
+
+    mov bx, [bp-6]
+    mov receive_turns[bx], al
+
+    inc word ptr [bp-6]
+    jmp @@message_loop
+
+@@message_end:
+    mov word ptr [bp-2], 3
+    jmp @@loop
+
+@@check_and_move:
+    mov al, receive_turns_size
+    add al, '0'
 
     push ax
     call bad_protocol
     add sp, 2
 
-    jmp @@end
+    mov word ptr [bp-6], 0
+@@check_loop:
+    mov bx, [bp-6]    
+    cmp bl, receive_turns_size
+    je @@check_end
+
+    
+    mov ah, receive_turns[bx]
+    mov al, receive_turns[bx+1]    
+
+    push ax
+    call back_convert_coords
+    add sp, 2
+
+    mov bx, ax
+    mov al, ah
+    xor ah, ah    
+    xor bh,bh
+    push ax
+    push bx 
+    push 0FFh   
+    call set_color
+    add sp, 2
+    call redraw_cell
+    add sp, 4
+
+    mov bx, [bp-6]
+    mov ah, receive_turns[bx+2]
+    mov al, receive_turns[bx+3]    
+
+    push ax
+    call back_convert_coords
+    add sp, 2
+
+    mov bx, ax
+    mov al, ah
+    xor ah, ah    
+    xor bh, bh
+    push ax
+    push bx
+    push evil_main_game_color 
+    call set_color
+    add sp, 2
+    call redraw_chip
+    add sp, 4
+
+    add word ptr [bp-6], 4
+    jmp @@check_loop
+
+@@check_end:
+    jmp @@change_turn
 
 @@change_turn:
     mov game_state, 102
     jmp @@end
 
 @@end:
+    add sp, 6
     pop bp
     ret
 endp evil_turn
+
+receive_turns_size db 0
+receive_turns db 81 dup(0)
