@@ -88,6 +88,19 @@ proc highlight_or_make
     call make
     add sp, 8
 
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call is_final_position   
+    add sp, 4
+
+    cmp ax, 1
+    jne @@end    
+
+    mov al, 'C'
+    call Out_Chr
+
     mov game_state, 104
 @@end:
     pop bp
