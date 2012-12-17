@@ -39,6 +39,111 @@ endp set_color
 
 ; X To      [bp+6]
 ; Y To      [bp+4]
+proc is_maybe
+    push bp
+    mov bp, sp
+    sub sp, 4
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_top
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_top
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    mov word ptr [bp-2], 0
+    mov word ptr [bp-4], 0
+
+@@row_loop:
+    cmp word ptr [bp-4], 8
+    je @@true
+
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call get_color
+    add sp, 4
+
+    cmp ax, main_game_color
+    je @@test
+    cmp ax, king_game_color
+    je @@test
+    jmp @@continue
+
+@@test:
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call check_left_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call check_right_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call check_left_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call check_right_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+@@continue:
+    inc word ptr [bp-2]
+    cmp word ptr [bp-2], 8
+    je @@new_row
+    jmp @@row_loop
+
+@@new_row:
+    mov word ptr [bp-2], 0
+    inc word ptr [bp-4]
+    jmp @@row_loop
+
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax, ax
+@@end:
+    
+    add sp, 4
+    pop bp
+    ret
+endp is_maybe
+
+; X To      [bp+6]
+; Y To      [bp+4]
 proc check_left_top
     push bp
     mov bp, sp
@@ -808,3 +913,74 @@ proc is_evil_available
     pop bp
     ret
 endp is_evil_available
+
+
+; X From [bp+10]
+; Y From [bp+8]
+; X To   [bp+6]
+; Y To   [bp+4]
+proc is_allow_make_cut
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+    cmp al, 0FFh
+    jne @@false
+
+    mov ax, [bp+10]
+    mov bx, [bp+6]
+    sub ax, bx
+    cmp ax, -2
+    je @@stub
+    cmp ax, 2
+    jne @@false
+@@stub:
+    mov ax, [bp+8]
+    mov bx, [bp+4]
+    sub ax, bx
+    cmp ax, -2
+    je @@cut
+    cmp ax, 2
+    jne @@false
+    jmp @@cut
+
+@@cut:
+    mov last_check_type, 1
+
+    mov ax, [bp+10]
+    add ax, [bp+6]
+    shr ax, 1
+
+    mov bx, [bp+8]
+    add bx, [bp+4]
+    shr bx, 1
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@true
+    cmp ax, evil_king_game_color
+    jne @@false
+    jmp @@true
+
+@@true:
+    mov ax, 1
+    jmp @@end
+
+@@false:
+    xor ax, ax
+    jmp @@end
+
+@@end:
+
+    pop bp
+    ret
+endp is_allow_make_cut

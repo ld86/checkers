@@ -13,6 +13,15 @@ proc check_and_highlight
     add sp, 4
 
     cmp ax, main_game_color
+    jne @@end    
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+
+    call is_maybe
+    add sp, 4
+
+    cmp ax, 1
     jne @@end
 
     mov ax, [bp+6]
@@ -60,6 +69,15 @@ proc highlight_or_make
     call redraw_cell
     call redraw_chip
     add sp, 4
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+
+    call is_maybe
+    add sp, 4
+
+    cmp ax, 1
+    jne @@end
 
     mov ax, [bp+6]
     mov bx, [bp+4]
@@ -142,7 +160,7 @@ proc only_make
     mov bx, [bp+4]
     push ax
     push bx    
-    call is_allow_make
+    call is_allow_make_cut
     add sp, 8
 
     cmp ax, 1
