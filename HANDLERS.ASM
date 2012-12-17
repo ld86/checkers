@@ -112,6 +112,17 @@ proc highlight_or_make
     jmp @@end
 
 @@continue_move:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call highlight_cell
+    call redraw_chip
+    add sp, 4
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    mov choosen_x, ax
+    mov choosen_y, bx
+
     mov game_state, 104
 
 @@end:
@@ -123,6 +134,51 @@ proc only_make
     push bp
     mov bp, sp
 
+    mov ax, choosen_x
+    mov bx, choosen_y
+    push ax
+    push bx
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx    
+    call is_allow_make
+    add sp, 8
+
+    cmp ax, 1
+    jne @@end
+
+    sub sp, 8
+    call add_move
+    call make
+    add sp, 8
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    push ax
+    push bx
+    call is_final_position   
+    add sp, 4
+
+    cmp ax, 1
+    jne @@continue_move
+
+    call flush
+    mov game_state, 105
+    jmp @@end
+
+@@continue_move:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call highlight_cell
+    call redraw_chip
+    add sp, 4
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    mov choosen_x, ax
+    mov choosen_y, bx
+@@end:
     pop bp
     ret
 endp only_make
@@ -158,6 +214,7 @@ endp add_move
 proc flush
     push bp
     mov bp, sp    
+    mov timer_lock, 1
     sub sp, 2
 
     mov al, 'C'
@@ -200,6 +257,7 @@ proc flush
     mov moves_pointer, 0
 
     add sp, 2    
+    mov timer_lock, 0
     pop bp
     ret
 endp flush

@@ -39,6 +39,218 @@ endp set_color
 
 ; X To      [bp+6]
 ; Y To      [bp+4]
+proc check_left_top
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    cmp ax, 2
+    jl @@false
+    cmp bx, 2
+    jl @@false
+
+    dec ax
+    dec bx
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@continue
+    cmp ax, evil_king_game_color
+    je @@continue
+    jmp @@false
+
+@@continue:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    sub ax, 2
+    sub bx, 2
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp al, 0FFh
+    je @@true
+    jmp @@false
+
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax, ax
+@@end:
+    pop bp
+    ret
+endp check_left_top
+
+; X To      [bp+6]
+; Y To      [bp+4]
+proc check_right_top
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    cmp ax, 5
+    jg @@false
+    cmp bx, 2
+    jl @@false
+
+    inc ax
+    dec bx
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@continue
+    cmp ax, evil_king_game_color
+    je @@continue
+    jmp @@false
+
+@@continue:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    add ax, 2
+    sub bx, 2
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp al, 0FFh
+    je @@true
+    jmp @@false
+
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax, ax
+@@end:
+    pop bp
+    ret
+endp check_right_top
+
+; X To      [bp+6]
+; Y To      [bp+4]
+proc check_left_bottom
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    cmp ax, 2
+    jl @@false
+    cmp bx, 5
+    jg @@false
+
+    dec ax
+    inc bx
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@continue
+    cmp ax, evil_king_game_color
+    je @@continue
+    jmp @@false
+
+@@continue:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    sub ax, 2
+    add bx, 2
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp al, 0FFh
+    je @@true
+    jmp @@false
+
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax, ax
+@@end:
+    pop bp
+    ret
+endp check_left_bottom
+
+; X To      [bp+6]
+; Y To      [bp+4]
+proc check_right_bottom
+    push bp
+    mov bp, sp
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+
+    cmp ax, 5
+    jg @@false
+    cmp bx, 5
+    jg @@false
+
+    inc ax
+    inc bx
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp ax, evil_main_game_color
+    je @@continue
+    cmp ax, evil_king_game_color
+    je @@continue
+    jmp @@false
+
+@@continue:
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+    add ax, 2
+    add bx, 2
+
+    push ax
+    push bx
+    call get_color
+    add sp, 4
+
+    cmp al, 0FFh
+    je @@true
+    jmp @@false
+
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax, ax
+@@end:
+    pop bp
+    ret
+endp check_right_bottom
+
+; X To      [bp+6]
+; Y To      [bp+4]
 proc is_final_position
     push bp
     mov bp, sp    
@@ -46,25 +258,33 @@ proc is_final_position
     cmp last_check_type, 0
     je @@true    
 
-@@left_top:
-    mov ax, [bp+6]
-    mov bx, [bp+4]
-@@left_top_end:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
 
-@@right_top:
-    mov ax, [bp+6]
-    mov bx, [bp+4]
-@@right_top_end:
-    
-@@left_bottom:
-    mov ax, [bp+6]
-    mov bx, [bp+4]
-@@left_bottom_end:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
 
-@@right_bottom:
-    mov ax, [bp+6]
-    mov bx, [bp+4]
-@@right_bottom_end:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
 
     jmp @@true
 

@@ -14,6 +14,7 @@ proc set_timer
     ret
 endp set_timer
 
+timer_lock db 0
 proc timer_handler
     pushf
     call dword ptr cs:[@@address]
@@ -24,6 +25,8 @@ proc timer_handler
     inc my_syn_counter
     cmp my_syn_counter, 18
     jl @@go
+    cmp timer_lock, 1
+    je @@go
     mov my_syn_counter, 0
     mov al, 'A'
     call Out_Chr
