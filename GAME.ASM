@@ -16,6 +16,7 @@ evil_main_game_color dw 7h
 evil_king_game_color dw 6
 
 where_king dw 0
+evil_where_king dw 7
 
 game_state dw 100
 ; 100 - waiting for players

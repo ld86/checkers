@@ -757,7 +757,22 @@ proc evil_turn
 
     sub sp, 8
     call evil_make
-    add sp, 8
+
+    pop bx
+    pop ax
+    add sp, 4
+
+    cmp bx, evil_where_king
+    jne @@check_loop_end
+
+    push ax
+    push bx
+    push evil_king_game_color
+    call set_color
+    add sp, 2
+
+    call redraw_chip
+    add sp, 4
 
 @@check_loop_end:
 
