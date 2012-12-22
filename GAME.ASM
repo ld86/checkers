@@ -15,6 +15,8 @@ king_game_color dw 0Eh
 evil_main_game_color dw 7h
 evil_king_game_color dw 6
 
+where_king dw 0
+
 game_state dw 100
 ; 100 - waiting for players
 ; 101 - start game
@@ -34,23 +36,33 @@ table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
 
 table_addr  dw 0
 
-white_table db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
-            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+;white_table db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+;            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+
+white_table db 0FFh,0FFh,0FFh,7,0FFh,7,0FFh,7
+            db 0Fh,0FFh,7,0FFh,7,0FFh,7,0FFh
             db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
-            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
-            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,7 
+            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0FFh,0FFh
+;            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+;            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
             
-black_table db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
-            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+;black_table db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+;            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+
+black_table db 0FFh,0FFh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+            db 7,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
             db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
-            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
-            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+            db 0FFh,7,0FFh,7,0FFh,7,0FFh,0Fh
+            db 7,0FFh,7,0FFh,7,0FFh,0FFh,0FFh
+;            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+;            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
 
 ; X Y
 proc get_cell_centr
