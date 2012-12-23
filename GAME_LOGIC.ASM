@@ -414,6 +414,7 @@ proc is_final_position
 endp is_final_position
 
 last_check_type db 0
+direction db 0
 ; X From    [bp+10]
 ; Y From    [bp+8]
 ; X To      [bp+6]
@@ -449,7 +450,162 @@ proc make
 
     call redraw_cell
     add sp, 4
+    
+    cmp last_check_type, 2
+    jne @@next_check_type
 
+
+    cmp direction, 0
+    je @@right_top
+    cmp direction, 1
+    je @@left_top
+    cmp direction, 2
+    je @@right_bottom
+    cmp direction, 3
+    je @@left_bottom
+    jmp @@end    
+
+@@right_top:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+@@right_top_loop:
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_top_loop_continue
+
+    push ax
+    push bx
+    push king_game_color
+    call set_color
+    add sp, 2
+    call redraw_cell
+    call redraw_chip
+    add sp, 4
+
+    jmp @@end
+@@right_top_loop_continue:
+    inc ax
+    dec bx
+    jmp @@right_top_loop
+
+@@left_top:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+@@left_top_loop:
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_top_loop_continue
+
+    push ax
+    push bx
+    push king_game_color
+    call set_color
+    add sp, 2
+    call redraw_cell
+    call redraw_chip
+    add sp, 4
+
+    jmp @@end
+@@left_top_loop_continue:
+    dec ax
+    dec bx
+    jmp @@left_top_loop
+    jmp @@end
+
+@@right_bottom:
+    push 'BB'
+    call bad_protocol
+    add sp, 2
+
+
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+@@right_bottom_loop:
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_bottom_loop_continue
+
+    push ax
+    push bx
+    push king_game_color
+    call set_color
+    add sp, 2
+    call redraw_cell
+    call redraw_chip
+    add sp, 4
+
+    jmp @@end
+@@right_bottom_loop_continue:
+    inc ax
+    inc bx
+    jmp @@right_bottom_loop
+    jmp @@end
+
+@@left_bottom:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+@@left_bottom_loop:
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_bottom_loop_continue
+
+    push ax
+    push bx
+    push king_game_color
+    call set_color
+    add sp, 2
+    call redraw_cell
+    call redraw_chip
+    add sp, 4
+
+    jmp @@end
+@@left_bottom_loop_continue:
+    dec ax
+    inc bx
+    jmp @@left_bottom_loop
+    jmp @@end
+
+@@next_check_type:
     cmp last_check_type, 1
     jne @@end
 
@@ -628,6 +784,7 @@ proc is_allow_make
     cmp bx, [bp+4]
     jne @@right_top_loop_continue
     
+    mov direction, 0
     jmp @@king_final_check
 @@right_top_loop_continue:
     inc ax
@@ -673,6 +830,7 @@ proc is_allow_make
     cmp bx, [bp+4]
     jne @@left_top_loop_continue
     
+    mov direction, 1
     jmp @@king_final_check
 @@left_top_loop_continue:
     dec ax
@@ -718,6 +876,7 @@ proc is_allow_make
     cmp bx, [bp+4]
     jne @@right_bottom_loop_continue
 
+    mov direction, 2
     jmp @@king_final_check
 @@right_bottom_loop_continue:
     inc ax
@@ -763,6 +922,7 @@ proc is_allow_make
     cmp bx, [bp+4]
     jne @@left_bottom_loop_continue
     
+    mov direction, 3
     jmp @@king_final_check
 @@left_bottom_loop_continue:
     dec ax
