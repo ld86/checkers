@@ -369,6 +369,8 @@ proc is_final_position
 
     cmp last_check_type, 0
     je @@true    
+    cmp last_check_type, 2
+    je @@king_check
 
     push word ptr [bp+6]
     push word ptr [bp+4]
@@ -400,6 +402,17 @@ proc is_final_position
 
     jmp @@true
 
+@@king_check:
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call king_has_cuts
+    add sp, 4
+
+    cmp ax, 1
+    je @@false
+
+    jmp @@true
+
 @@true:
     mov ax, 1
     jmp @@end
@@ -412,6 +425,132 @@ proc is_final_position
     pop bp
     ret
 endp is_final_position
+
+; X [bp+6]
+; Y [bp+4]
+proc king_has_cuts
+    push bp
+    mov bp, sp
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_top
+    add sp, 4
+    cmp ax, 1
+    je @@true
+    
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_top
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_left_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call check_right_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@right_top_loop:
+    inc ax
+    dec bx
+    cmp ax, 8
+    je @@right_top_continue
+    cmp bx, -1
+    je @@right_top_continue
+    push ax
+    push bx
+    call check_right_top
+    mov dx, ax
+    pop bx
+    pop ax
+    cmp dx, 1
+    je @@true
+    jmp @@right_top_loop
+@@right_top_continue:
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@left_top_loop:
+    dec ax
+    dec bx
+    cmp ax, -1
+    je @@left_top_continue
+    cmp bx, -1
+    je @@left_top_continue
+    push ax
+    push bx
+    call check_left_top
+    mov dx, ax
+    pop bx
+    pop ax
+    cmp dx, 1
+    je @@true
+    jmp @@left_top_loop
+@@left_top_continue:
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@right_bottom_loop:
+    inc ax
+    inc bx
+    cmp ax, 8
+    je @@right_bottom_continue
+    cmp bx, 8
+    je @@right_bottom_continue
+    push ax
+    push bx
+    call check_right_bottom
+    mov dx, ax
+    pop bx
+    pop ax
+    cmp dx, 1
+    je @@true
+    jmp @@right_bottom_loop
+@@right_bottom_continue:
+
+    mov ax, [bp+6]
+    mov bx, [bp+4]
+@@left_bottom_loop:
+    dec ax
+    inc bx
+    cmp ax, -1
+    je @@left_bottom_continue
+    cmp bx, 8
+    je @@left_bottom_continue
+    push ax
+    push bx
+    call check_left_bottom
+    mov dx, ax
+    pop bx
+    pop ax
+    cmp dx, 1
+    je @@true
+    jmp @@left_bottom_loop
+@@left_bottom_continue:
+
+    
+    jmp @@false
+@@true:
+    mov ax, 1
+    jmp @@end
+@@false:
+    xor ax,ax
+@@end:
+    pop bp
+    ret
+endp king_has_cuts
 
 last_check_type db 0
 direction db 0
