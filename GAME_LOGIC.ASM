@@ -46,13 +46,6 @@ proc is_maybe
 
     push word ptr [bp+6]
     push word ptr [bp+4]
-    call get_color
-    add sp, 4
-    cmp ax, king_game_color
-    je @@true
-
-    push word ptr [bp+6]
-    push word ptr [bp+4]
     call check_left_top
     add sp, 4
     cmp ax, 1
@@ -79,6 +72,13 @@ proc is_maybe
     cmp ax, 1
     je @@true
 
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    call king_has_cuts
+    add sp, 4
+    cmp ax, 1
+    je @@true
+
     mov word ptr [bp-2], 0
     mov word ptr [bp-4], 0
 
@@ -94,8 +94,16 @@ proc is_maybe
     cmp ax, main_game_color
     je @@test
     cmp ax, king_game_color
-    je @@test
+    je @@king_test
     jmp @@continue
+
+@@king_test:
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call king_has_cuts
+    add sp, 4
+    cmp ax, 1
+    je @@false
 
 @@test:
     push word ptr [bp-2]
@@ -125,7 +133,6 @@ proc is_maybe
     add sp, 4
     cmp ax, 1
     je @@false
-
 @@continue:
     inc word ptr [bp-2]
     cmp word ptr [bp-2], 8
@@ -672,11 +679,6 @@ proc make
     jmp @@end
 
 @@right_bottom:
-    push 'BB'
-    call bad_protocol
-    add sp, 2
-
-
     mov ax, [bp+10]
     mov bx, [bp+8]
 @@right_bottom_loop:
@@ -1532,10 +1534,6 @@ proc is_evil_available
     jmp @@false
 
 @@left_top:
-    push 'BB'
-    call bad_protocol
-    add sp, 2
-
     mov ax, [bp+10]
     mov bx, [bp+8]
         
@@ -1668,6 +1666,15 @@ proc is_allow_make_cut
     cmp al, 0FFh
     jne @@false
 
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call get_color
+    add sp, 4
+    xor ah, ah
+    cmp ax, king_game_color
+    je @@king_check
+
+
     mov ax, [bp+10]
     mov bx, [bp+6]
     sub ax, bx
@@ -1706,6 +1713,229 @@ proc is_allow_make_cut
     cmp ax, evil_king_game_color
     jne @@false
     jmp @@true
+
+@@king_check:
+    mov last_check_type, 2
+
+    mov evils, 0
+    mov my, 0
+
+    mov ax, [bp+8]
+    cmp ax, [bp+4]
+    jl @@bottom 
+
+    cmp ax, [bp+4]
+    jg @@top
+    jmp @@false
+
+@@top:
+    mov ax, [bp+10]
+    cmp ax, [bp+6]
+    jg @@left_top
+
+    cmp ax, [bp+6]
+    jl @@right_top
+    jmp @@false
+
+@@bottom:
+    mov ax, [bp+10]
+    cmp ax, [bp+6]
+    jg @@left_bottom
+    
+    cmp ax, [bp+6]
+    jl @@right_bottom
+    jmp @@false   
+
+@@right_top:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+@@right_top_loop:
+    cmp ax, 8
+    je @@false
+    cmp bx, -1
+    je @@false
+
+    push ax
+    push bx
+    call get_color
+    cmp ax, main_game_color
+    je @@rtm
+    cmp ax, king_game_color
+    je @@rtm
+    cmp ax, evil_main_game_color
+    je @@rte
+    cmp ax, evil_king_game_color
+    je @@rte
+    jmp @@rt
+@@rtm:
+    inc my
+    jmp @@rt
+@@rte:
+    inc evils
+    jmp @@rt
+@@rt:
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_top_loop_continue
+    
+    mov direction, 0
+    jmp @@king_final_check
+@@right_top_loop_continue:
+    inc ax
+    dec bx 
+    jmp @@right_top_loop
+
+    jmp @@false
+
+@@left_top:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+@@left_top_loop:
+    cmp ax, -1
+    je @@false
+    cmp bx, -1
+    je @@false
+
+    push ax
+    push bx
+    call get_color
+    cmp ax, main_game_color
+    je @@ltm
+    cmp ax, king_game_color
+    je @@ltm
+    cmp ax, evil_main_game_color
+    je @@lte
+    cmp ax, evil_king_game_color
+    je @@lte
+    jmp @@lt
+@@ltm:
+    inc my
+    jmp @@lt
+@@lte:
+    inc evils
+    jmp @@lt
+@@lt:
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_top_loop_continue
+    
+    mov direction, 1
+    jmp @@king_final_check
+@@left_top_loop_continue:
+    dec ax
+    dec bx 
+    jmp @@left_top_loop
+
+    jmp @@false
+
+@@right_bottom:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+@@right_bottom_loop:
+    cmp ax, 8
+    je @@false
+    cmp bx, 8
+    je @@false
+
+    push ax
+    push bx
+    call get_color
+    cmp ax, main_game_color
+    je @@rbm
+    cmp ax, king_game_color
+    je @@rbm
+    cmp ax, evil_main_game_color
+    je @@rbe
+    cmp ax, evil_king_game_color
+    je @@rbe
+    jmp @@rb
+@@rbm:
+    inc my
+    jmp @@rb
+@@rbe:
+    inc evils
+    jmp @@rb
+@@rb:
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_bottom_loop_continue
+
+    mov direction, 2
+    jmp @@king_final_check
+@@right_bottom_loop_continue:
+    inc ax
+    inc bx 
+    jmp @@right_bottom_loop
+
+    jmp @@false
+
+@@left_bottom:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+@@left_bottom_loop:
+    cmp ax, -1
+    je @@false
+    cmp bx, 8
+    je @@false
+
+    push ax
+    push bx
+    call get_color
+    cmp ax, main_game_color
+    je @@lbm
+    cmp ax, king_game_color
+    je @@lbm
+    cmp ax, evil_main_game_color
+    je @@lbe
+    cmp ax, evil_king_game_color
+    je @@lbe
+    jmp @@lb
+@@lbm:
+    inc my
+    jmp @@lb
+@@lbe:
+    inc evils
+    jmp @@lb
+@@lb:
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_bottom_loop_continue
+    
+    mov direction, 3
+    jmp @@king_final_check
+@@left_bottom_loop_continue:
+    dec ax
+    inc bx 
+    jmp @@left_bottom_loop
+
+    jmp @@false
+
+@@king_final_check:
+    cmp my, 1
+    jne @@false
+    cmp evils, 1
+    jle @@true
+    jmp @@false
 
 @@true:
     mov ax, 1
