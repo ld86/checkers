@@ -1258,7 +1258,7 @@ proc is_evil_available
     add sp, 4
     xor ah, ah
     cmp ax, evil_king_game_color
-    je @@true
+    je @@king_check
 
     mov ax, [bp+6]
     mov bx, [bp+4]
@@ -1330,6 +1330,173 @@ proc is_evil_available
     add sp, 4
 
     jmp @@true
+
+@@king_check:
+    mov ax, [bp+8]
+    cmp ax, [bp+4]
+    jl @@bottom 
+
+    cmp ax, [bp+4]
+    jg @@top
+    jmp @@false
+
+@@top:
+    mov ax, [bp+10]
+    cmp ax, [bp+6]
+    jg @@left_top
+
+    cmp ax, [bp+6]
+    jl @@right_top
+    jmp @@false
+
+@@bottom:
+    mov ax, [bp+10]
+    cmp ax, [bp+6]
+    jg @@left_bottom
+    
+    cmp ax, [bp+6]
+    jl @@right_bottom
+    jmp @@false   
+
+@@right_top:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+    
+    inc ax
+    dec bx       
+@@right_top_loop:
+    cmp ax, 8
+    je @@false
+    cmp bx, -1
+    je @@false
+
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_top_loop_continue
+    
+    jmp @@true
+@@right_top_loop_continue:
+    inc ax
+    dec bx 
+    jmp @@right_top_loop
+
+    jmp @@false
+
+@@left_top:
+    push 'BB'
+    call bad_protocol
+    add sp, 2
+
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+    dec ax
+    dec bx
+@@left_top_loop:
+    cmp ax, -1
+    je @@false
+    cmp bx, -1
+    je @@false
+
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_top_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_top_loop_continue
+    
+    jmp @@true
+@@left_top_loop_continue:
+    dec ax
+    dec bx 
+    jmp @@left_top_loop
+
+    jmp @@false
+
+@@right_bottom:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+    inc ax
+    inc bx
+@@right_bottom_loop:
+    cmp ax, 8
+    je @@false
+    cmp bx, 8
+    je @@false
+    
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@right_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@right_bottom_loop_continue
+
+    jmp @@true
+@@right_bottom_loop_continue:
+    inc ax
+    inc bx 
+    jmp @@right_bottom_loop
+
+    jmp @@false
+
+@@left_bottom:
+    mov ax, [bp+10]
+    mov bx, [bp+8]
+        
+    dec ax
+    inc bx
+@@left_bottom_loop:
+    cmp ax, -1
+    je @@false
+    cmp bx, 8
+    je @@false
+
+    push ax
+    push bx
+    push 0FFh
+    call set_color
+    add sp, 2
+    call redraw_cell
+    pop bx
+    pop ax
+
+    cmp ax, [bp+6]
+    jne @@left_bottom_loop_continue
+    cmp bx, [bp+4]
+    jne @@left_bottom_loop_continue
+    
+    jmp @@true
+@@left_bottom_loop_continue:
+    dec ax
+    inc bx 
+    jmp @@left_bottom_loop
+
+    jmp @@false
 
 @@true:
     mov ax, 1
