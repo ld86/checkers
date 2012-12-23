@@ -415,12 +415,17 @@ proc make
     push bp
     mov bp, sp    
     
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call get_color
+    add sp, 4
+    mov dx, ax
+
     mov ax, [bp+6]
     mov bx, [bp+4]
     push ax
     push bx
-    mov ax, main_game_color
-    push ax
+    push dx
     call set_color
     add sp, 2
     
@@ -438,8 +443,8 @@ proc make
     call redraw_cell
     add sp, 4
 
-    cmp last_check_type, 0
-    je @@end
+    cmp last_check_type, 1
+    jne @@end
 
     mov ax, [bp+10]
     add ax, [bp+6]
@@ -470,6 +475,15 @@ endp make
 proc is_allow_make
     push bp
     mov bp, sp
+
+    mov last_check_type, 2
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call get_color
+    add sp, 4
+    xor ah, ah
+    cmp ax, king_game_color
+    je @@true
 
     mov ax, [bp+6]
     mov bx, [bp+4]
@@ -810,12 +824,17 @@ proc evil_make
     push bp
     mov bp, sp    
     
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call get_color
+    add sp, 4
+    mov dx, ax
+
     mov ax, [bp+6]
     mov bx, [bp+4]
     push ax
     push bx
-    mov ax, evil_main_game_color
-    push ax
+    push dx
     call set_color
     add sp, 2
     
@@ -844,6 +863,14 @@ endp evil_make
 proc is_evil_available
     push bp
     mov bp, sp
+
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call get_color
+    add sp, 4
+    xor ah, ah
+    cmp ax, evil_king_game_color
+    je @@true
 
     mov ax, [bp+6]
     mov bx, [bp+4]

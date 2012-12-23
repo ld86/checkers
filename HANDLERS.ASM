@@ -12,9 +12,12 @@ proc check_and_highlight
     call get_color
     add sp, 4
 
+    cmp ax, king_game_color
+    je @@ok_chip
     cmp ax, main_game_color
     jne @@end    
 
+@@ok_chip:
     push word ptr [bp+6]
     push word ptr [bp+4]
 
@@ -58,9 +61,12 @@ proc highlight_or_make
     call get_color
     add sp, 4
 
+    cmp ax, king_game_color
+    je @@ok_chip
     cmp ax, main_game_color
     jne @@try_make
 
+@@ok_chip:
     mov ax, choosen_x
     mov bx, choosen_y
 
