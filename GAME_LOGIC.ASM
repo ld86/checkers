@@ -74,11 +74,19 @@ proc is_maybe
 
     push word ptr [bp+6]
     push word ptr [bp+4]
+    call get_color
+    add sp, 4
+    cmp ax, king_game_color
+    jne @@all_table
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
     call king_has_cuts
     add sp, 4
     cmp ax, 1
     je @@true
 
+@@all_table:
     mov word ptr [bp-2], 0
     mov word ptr [bp-4], 0
 
@@ -104,6 +112,7 @@ proc is_maybe
     add sp, 4
     cmp ax, 1
     je @@false
+    jmp @@continue
 
 @@test:
     push word ptr [bp-2]
@@ -818,6 +827,34 @@ proc is_allow_make
     jmp @@cut
 
 @@move:
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call check_left_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
+    
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call check_right_top
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call check_left_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call check_right_bottom
+    add sp, 4
+    cmp ax, 1
+    je @@false
+
     mov last_check_type, 0
 
     mov ax, [bp+8]

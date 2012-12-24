@@ -37,9 +37,9 @@ table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
 
 table_addr  dw 0
 
-white_table db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
-            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
-            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+white_table db 0FFh,0FFh,0FFh,7,0FFh,7,0FFh,7
+            db 0Fh,0FFh,7,0FFh,7,0FFh,7,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,7,0FFh,7
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
@@ -51,9 +51,9 @@ black_table db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh
             db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
-            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
-            db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
-            db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+            db 7,0FFh,7,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,7,0FFh,7,0FFh,7,0FFh,0Fh
+            db 7,0FFh,7,0FFh,7,0FFh,0FFh,0FFh
 
 ; X Y
 proc get_cell_centr
