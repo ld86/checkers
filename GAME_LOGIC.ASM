@@ -385,6 +385,8 @@ proc is_final_position
 
     cmp last_check_type, 0
     je @@true    
+    cmp last_check_type, 3
+    je @@true
     cmp last_check_type, 2
     je @@king_check
 
@@ -1113,7 +1115,19 @@ proc is_allow_make
     cmp my, 1
     jne @@false
     cmp evils, 1
-    jle @@true
+    je @@true
+    cmp evils, 1
+    jg @@false
+
+    mov last_check_type, 3
+
+    push word ptr [bp+10]
+    push word ptr [bp+8]
+    call king_has_cuts
+    add sp, 4
+    cmp ax, 0
+    je @@true
+
     jmp @@false
 
 @@true:
@@ -1971,7 +1985,7 @@ proc is_allow_make_cut
     cmp my, 1
     jne @@false
     cmp evils, 1
-    jle @@true
+    je @@true
     jmp @@false
 
 @@true:
