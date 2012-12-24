@@ -165,6 +165,15 @@ proc highlight_or_make
     mov game_state, 104
 
 @@end:
+
+    call counts_chip    
+    cmp al, 0
+    jne @@final_end
+    call lose
+    mov game_state, 106
+    jmp @@final_end
+
+@@final_end:
     pop bp
     ret
 endp highlight_or_make
@@ -218,6 +227,15 @@ proc only_make
     mov choosen_x, ax
     mov choosen_y, bx
 @@end:
+
+    call counts_chip    
+    cmp al, 0
+    jne @@final_end
+    call lose
+    mov game_state, 106
+    jmp @@final_end
+
+@@final_end:
     pop bp
     ret
 endp only_make
@@ -300,3 +318,4 @@ proc flush
     pop bp
     ret
 endp flush
+

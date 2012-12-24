@@ -1388,6 +1388,15 @@ proc evil_turn
     jmp @@end
 
 @@end:
+    call counts_chip    
+    cmp ah, 0
+    jne @@final_end
+    call win
+    mov game_state, 106
+    jmp @@final_end
+
+@@final_end:
+
     add sp, 6
     pop bp
     ret
@@ -2001,3 +2010,104 @@ proc is_allow_make_cut
     pop bp
     ret
 endp is_allow_make_cut
+
+proc counts_chip
+    push bp
+    mov bp, sp
+    sub sp, 8
+
+@@all_table:
+    mov word ptr [bp-2], 0
+    mov word ptr [bp-4], 0
+    mov word ptr [bp-6], 0
+    mov word ptr [bp-8], 0
+
+@@row_loop:
+    cmp word ptr [bp-4], 8
+    je @@end_loop
+
+    push word ptr [bp-2]
+    push word ptr [bp-4]
+    call get_color
+    add sp, 4
+
+    cmp ax, main_game_color
+    je @@my
+    cmp ax, king_game_color
+    je @@my
+    cmp ax, evil_main_game_color
+    je @@evil
+    cmp ax, evil_main_game_color
+    je @@evil
+    jmp @@continue
+
+@@my:
+    inc word ptr [bp-6]
+    jmp @@continue
+
+@@evil:
+    inc word ptr [bp-8]
+    jmp @@continue
+
+@@continue:
+    inc word ptr [bp-2]
+    cmp word ptr [bp-2], 8
+    je @@new_row
+    jmp @@row_loop
+
+@@new_row:
+    mov word ptr [bp-2], 0
+    inc word ptr [bp-4]
+    jmp @@row_loop
+
+@@end_loop:
+    mov ax, [bp-6]
+    mov bx, [bp-8]
+    mov ah, al
+    mov al, bl
+
+    add sp, 8
+    pop bp
+    ret
+endp counts_chip
+
+
+lose_message_x db 25
+lose_message_y db 15
+lose_message db 'You lose!$'
+proc lose
+    push bp
+    mov bp, sp
+
+    mov ah, 02h
+    xor bh, bh
+    mov dh, lose_message_y
+    mov dl, lose_message_x
+    int 10h
+    mov ah, 09h
+    mov dx, offset lose_message
+    int 21h
+
+    pop bp
+    ret
+endp lose
+
+win_message_x db 25
+win_message_y db 15
+win_message db 'You win!$'
+proc win
+    push bp
+    mov bp, sp
+
+    mov ah, 02h
+    xor bh, bh
+    mov dh, win_message_y
+    mov dl, win_message_x
+    int 10h
+    mov ah, 09h
+    mov dx, offset win_message
+    int 21h
+
+    pop bp
+    ret
+endp win

@@ -25,7 +25,7 @@ game_state dw 100
 ; 103 - move chip
 ; 104 - continue move
 ; 105 - evil turn
-
+; 106 - restart 
 table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
                 db 0,0Fh,0,0Fh,0,0Fh,0,0Fh
                 db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
@@ -37,23 +37,41 @@ table_colors    db 0Fh,0,0Fh,0,0Fh,0,0Fh,0
 
 table_addr  dw 0
 
-white_table db 0FFh,0FFh,0FFh,7,0FFh,7,0FFh,7
-            db 0Fh,0FFh,7,0FFh,7,0FFh,7,0FFh
-            db 0FFh,0FFh,0FFh,0FFh,0FFh,7,0FFh,7
-            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
-            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
-            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
-            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
-            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+start_white_table   db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+                    db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+                    db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+                    db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+                    db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+                    db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+                    db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+                    db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
             
-black_table db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
-            db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
-            db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+start_black_table   db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+                    db 0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh
+                    db 0FFh,0Fh,0FFh,0Fh,0FFh,0Fh,0FFh,0Fh 
+                    db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+                    db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+                    db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+                    db 0FFh,7,0FFh,7,0FFh,7,0FFh,7
+                    db 7,0FFh,7,0FFh,7,0FFh,7,0FFh
+
+white_table db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
             db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
-            db 7,0FFh,7,0FFh,0FFh,0FFh,0FFh,0FFh
-            db 0FFh,7,0FFh,7,0FFh,7,0FFh,0Fh
-            db 7,0FFh,7,0FFh,7,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            
+black_table db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+            db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
 
 ; X Y
 proc get_cell_centr
@@ -292,6 +310,8 @@ proc handle_mouse_click
     je @@highlight_or_make
     cmp game_state, 104
     je @@only_make
+    cmp game_state, 106
+    je @@restart
     jmp @@end
 
 @@highlight_and_check:
@@ -314,6 +334,13 @@ proc handle_mouse_click
     push bx
     call only_make
     add sp, 4
+    jmp @@end
+
+@@restart:
+    mov al, 1
+    sub al, white_or_black
+    mov white_or_black, al
+    mov game_state, 101
     jmp @@end
 
 @@end:
@@ -511,14 +538,36 @@ proc redraw_chips
     ret
 endp redraw_chips
 
+proc copy_tables
+    mov bx, 0
+@@copy_loop:
+    cmp bx, 64
+    je @@copy_loop_end
+
+    mov al, start_white_table[bx]
+    mov white_table[bx], al
+    mov al, start_black_table[bx]
+    mov black_table[bx], al
+    inc bx
+    jmp @@copy_loop
+@@copy_loop_end:
+    ret
+endp copy_tables
+
 ; 0 - White, 1 - Black
 proc start_game
     push bp
     mov bp, sp
  
+    call copy_tables      
+
     call clear_screen   
     mov table_addr, offset white_table
     mov game_state, 102
+    mov main_game_color, 0Fh
+    mov king_game_color, 0Eh
+    mov evil_main_game_color, 7
+    mov evil_king_game_color, 6
     mov ax, [bp+4]
     test ax, ax
     je @@next
@@ -530,11 +579,6 @@ proc start_game
     mov game_state, 105
 @@next:
     call draw_field
-    
-    push 3
-    push 4
-    call redraw_cell
-    add sp, 4
 
     push table_addr
     call redraw_chips
