@@ -1381,6 +1381,10 @@ proc evil_turn
     jmp @@end
 
 @@check_end:
+    mov al, 'D'
+    call Out_Chr
+    mov al, '0'
+    call Out_Chr
     jmp @@change_turn
 
 @@change_turn:
@@ -1396,6 +1400,7 @@ proc evil_turn
     jmp @@final_end
 
 @@final_end:
+
 
     add sp, 6
     pop bp
