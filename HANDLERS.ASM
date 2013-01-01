@@ -133,7 +133,6 @@ proc highlight_or_make
 
     call redraw_chip
     add sp, 4
-
 @@not_king:
 
     mov ax, [bp+6]
@@ -200,6 +199,20 @@ proc only_make
     call add_move
     call make
     add sp, 8
+
+    mov ax, [bp+4]
+    cmp ax, where_king
+    jne @@not_king
+
+    push word ptr [bp+6]
+    push word ptr [bp+4]
+    push king_game_color
+    call set_color
+    add sp, 2
+
+    call redraw_chip
+    add sp, 4
+@@not_king:
 
     mov ax, [bp+6]
     mov bx, [bp+4]
